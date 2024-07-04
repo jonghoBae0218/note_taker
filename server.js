@@ -23,10 +23,26 @@ app.get('/api/notes', (req, res) => {
     res.json(JSON.parse(notes));
 });
 
+app.post('/api/notes', async (req, res) => {
+    // Get the title and text from the request body
+    const { title, text } = req.body;
 
+
+    // Generate a random id for the new note
+    const id = crypto.randomUUID();
+
+    // Read notes from the json file
+    const notes = JSON.parse(readFileSync('./db/db.json')) || {};
+    // Add the new note to the notes object
+    notes.push({ title, text, id });
+
+    // Write the notes array back to the json
+    writeFileSync('./db/db.json', JSON.stringify(notes, null, 2));
+    // Send the new note id back to the client
+    res.json({ id });
+});
 
 app.delete("/api/notes/:id", async (req, res) => {
-    console.info("Delete init");
     // Get the id of the note to be deleted
     const id = req.params.id;
     console.info(id);
