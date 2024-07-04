@@ -1,3 +1,4 @@
+// Dependencies
 const { writeFileSync, readFileSync } = require('fs');
 const express = require('express');
 const crypto = require('crypto');
@@ -6,34 +7,33 @@ const app = express();
 
 const PORT = process.env.PORT || 3001;
 
+// middleware
 app.use(express.static('public'));
 app.use(express.json());
 
+// Landing page
 app.get("/", (req, res) => 
     res.sendFile(path.join(__dirname + '/public/index.html'))
 );
 
-app.get("/notes", (req, res) => 
-    res.sendFile(path.join(__dirname + '/public/notes.html'))
-);
-
+// When clicking start button from landing page
 app.get('/api/notes', (req, res) => {
     // Read notes from the json file
     const notes = readFileSync('./db/db.json');
     res.json(JSON.parse(notes));
 });
 
+// When adding notes
 app.post('/api/notes', async (req, res) => {
     // Get the title and text from the request body
     const { title, text } = req.body;
-
 
     // Generate a random id for the new note
     const id = crypto.randomUUID();
 
     // Read notes from the json file
     const notes = JSON.parse(readFileSync('./db/db.json')) || {};
-    // Add the new note to the notes object
+    // Add the new note to array
     notes.push({ title, text, id });
 
     // Write the notes array back to the json
@@ -42,12 +42,13 @@ app.post('/api/notes', async (req, res) => {
     res.json({ id });
 });
 
+//When deleting notes
 app.delete("/api/notes/:id", async (req, res) => {
     // Get the id of the note to be deleted
     const id = req.params.id;
     console.info(id);
     if (!id) {
-        return res.status(400).send('Invalid request body');
+        return res.status(400).send('Invalid');
     }
 
     // Read notes from the json file
@@ -61,7 +62,7 @@ app.delete("/api/notes/:id", async (req, res) => {
 
     // Write the new notes array back to the json file
     writeFileSync('./db/db.json', JSON.stringify(notes, null, 2));
-    res.json('Note deleted successfully');
+    res.json('Note deleted');
 });
 
 app.listen(PORT, () => {
